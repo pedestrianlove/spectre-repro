@@ -55,13 +55,24 @@ build {
         ]
     }
 
-    # Optimize VM size
+    # Clean packages and logs
     provisioner "shell" {
         inline = [
-            "echo 'ubuntu' | sudo -S apt-get autoremove",
+            "echo 'ubuntu' | sudo -S apt-get autoremove -y",
             "echo 'ubuntu' | sudo -S apt-get clean",
             "echo 'ubuntu' | sudo -S rm -rf /var/log/*",
+            "echo 'ubuntu' | sudo -S rm -rf /var/cache/apt/*",
+            "echo 'ubuntu' | sudo -S journalctl --vacuum-size=1M",
+            "echo 'ubuntu' | sudo -S rm -f /swapfile || true",
             "echo 'ubuntu' | sudo -S fstrim /"
+        ]
+    }
+
+    # Zero free space (big compression win)
+    provisioner "shell" {
+        inline = [
+            "echo 'ubuntu' | sudo -S dd if=/dev/zero of=/EMPTY bs=1M || true",
+            "echo 'ubuntu' | sudo -S rm -f /EMPTY"
         ]
     }
 
