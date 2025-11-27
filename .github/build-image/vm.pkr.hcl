@@ -74,4 +74,11 @@ build {
             "echo 'ubuntu' | sudo -S fstrim /"
         ]
     }
+
+    post-processor "vagrant" {
+        keep_input_artifact = true
+        # {{.BuildName}} will be "practice-vm"
+        # {{.Provider}} will be "libvirt" for Qemu and "virtualbox" for VirtualBox
+        output = "build/{{.BuildName}}-{{.Provider}}.box"
+    }
 }
