@@ -8,17 +8,13 @@ packer {
             version = "~> 1"
             source = "github.com/hashicorp/vagrant"
         }
-        virtualbox = {
-            version = "~> 1"
-            source  = "github.com/hashicorp/virtualbox"
-        }
     }
 }
 
 source "qemu" "practice-vm" {
     iso_url = "https://releases.ubuntu.com/noble/ubuntu-24.04.3-live-server-amd64.iso"
     iso_checksum            = "file:https://releases.ubuntu.com/noble/SHA256SUMS"
-    disk_size = "10000M"
+    disk_size = "8000M"
     memory = "4096"
     cores = 4
     threads = 4
@@ -52,15 +48,9 @@ build {
     # Setup for development
     provisioner "shell" {
         inline = [
-            # Disable auto-dimming the screen
-            "gsettings set org.gnome.desktop.session idle-delay 0",
-
-            # Enable dark mode by default
-            "gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark'",
-
             # Fix the boot lagging issue (we already have NetworkManager)
             "echo 'ubuntu' | sudo -S systemctl disable systemd-networkd",
-            "echo 'ubuntu' | sudo -S systemctl disable NetworkManager-wait-online.service",
+            # "echo 'ubuntu' | sudo -S systemctl disable NetworkManager-wait-online.service",
 
         ]
     }
@@ -76,9 +66,12 @@ build {
     }
 
     post-processor "vagrant" {
+
         keep_input_artifact = true
         # {{.BuildName}} will be "practice-vm"
         # {{.Provider}} will be "libvirt" for Qemu and "virtualbox" for VirtualBox
+        provider_override   = "libvirt"
         output = "build/{{.BuildName}}-{{.Provider}}.box"
+        compression_level = 9
     }
 }
