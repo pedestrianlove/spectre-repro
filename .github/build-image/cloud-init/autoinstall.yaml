@@ -21,24 +21,12 @@ autoinstall:
     layout:
       name: direct
 
-  snaps:
-    - name: code
-      channel: stable
-      classic: true
-
   packages:
     # 基本
     - vim 
     - tmux 
     - git
-    - firefox
 
     # eBPF
-    - linux-tools-common
-    - libbpf-dev 
     - build-essential
     - clang
-
-    # GUI
-    - ubuntu-desktop-minimal
-    - virtualbox-guest-x11 
