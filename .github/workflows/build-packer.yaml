@@ -1,0 +1,80 @@
+name: Build packer vm
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/**'
+      - '.github/build-image/cloud-init/**' 
+      - '.github/build-image/*.pkr.hcl'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/**'
+      - '.github/build-image/cloud-init/**' 
+      - '.github/build-image/*.pkr.hcl'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  packer:
+    runs-on: ubuntu-latest
+    name: Run Packer
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install VirtualBox and Dependencies
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y virtualbox virtualbox-guest-additions-iso
+
+      - name: Setup `packer`
+        uses: hashicorp/setup-packer@main
+        id: setup
+        with:
+          version: latest
+
+      - name: Run `packer init`
+        working-directory: .github/build-image
+        id: init
+        run: packer init .
+
+      - name: Run `packer validate`
+        working-directory: .github/build-image
+        id: validate
+        run: packer validate .
+
+      - name: Build packer image
+        working-directory: .github/build-image
+        run: |
+          packer build -only=qemu.practice-vm .
+
+      - name: Bump version and push tag
+        id: tag_version
+        uses: mathieudutour/github-tag-action@v6.2
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Split the vm file in to chunks of 2G before uploading
+        working-directory: .github/build-image/build
+        run: |
+          zip -s 1900m -r -0 practice-vm.zip practice-vm.ova
+
+      - name: Create a new release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.tag_version.outputs.new_tag }}
+          make_latest: true
+          generate_release_notes: true
+          fail_on_unmatched_files: false
+          prerelease: false
+          files: |
+            build/practice-vm.z*

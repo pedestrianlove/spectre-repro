@@ -1,0 +1,44 @@
+#cloud-config
+autoinstall:
+  version: 1
+  updates: all
+  shutdown: reboot
+  timezone: "Asia/Taipei"
+  identity:
+    realname: 'ubuntu'
+    hostname: practice-vm
+    username: ubuntu
+    #password: <mkpasswd -m sha-512 "ubuntu">
+    password: '$6$YRXTA3.DLqUt1OLU$FXWQLr8h0GqKHbCDvGSKaQE8WknKNK6nkVSeqhIRIh27e.ZbpY4H5WAQwSL0lZRwoGC9OAAivNorDkq1e0hPZ0'
+
+  # Setup SSH
+  ssh:
+    install-server: yes
+    allow-pw: yes
+
+  # Install to the largest disk in the system without encryption
+  storage:
+    layout:
+      name: direct
+
+  snaps:
+    - name: code
+      channel: stable
+      classic: true
+
+  packages:
+    # 基本
+    - vim 
+    - tmux 
+    - git
+    - firefox
+
+    # eBPF
+    - linux-tools-common
+    - libbpf-dev 
+    - build-essential
+    - clang
+
+    # GUI
+    - ubuntu-desktop-minimal
+    - virtualbox-guest-x11 
