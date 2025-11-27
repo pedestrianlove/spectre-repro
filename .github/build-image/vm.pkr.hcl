@@ -46,37 +46,8 @@ source "qemu" "practice-vm" {
     shutdown_timeout = "10h"
 }
 
-source "virtualbox-iso" "practice-vm" {
-    vm_name = "practice-vm"
-    guest_os_type = "Ubuntu_64"
-    hard_drive_discard = true
-    format = "ova"
-    iso_url = "https://releases.ubuntu.com/noble/ubuntu-24.04.3-live-server-amd64.iso"
-    iso_checksum            = "file:https://releases.ubuntu.com/noble/SHA256SUMS"
-    output_directory = "build"
-    headless = true
-    memory = 4096
-    cpus = 4
-    vboxmanage = [
-        ["modifyvm", "{{.Name}}", "--vram", "128"]
-    ]
-    vrdp_bind_address = "0.0.0.0"
-    communicator = "ssh"
-    ssh_pty = true
-    ssh_username = "ubuntu"
-    ssh_password = "ubuntu"
-    ssh_timeout = "10h"
-    shutdown_command  = "echo 'ubuntu' | sudo -S shutdown -P now"
-    shutdown_timeout = "10h"
-    http_directory = "cloud-init"
-    boot_command = [
-        "<wait>e",
-        "<wait><down><down><down><end><left><left><left><left> autoinstall ip=dhcp cloud-config-url=http://{{.HTTPIP}}:{{.HTTPPort}}/autoinstall.yaml<wait><f10><wait>"
-    ]
-}
-
 build {
-    sources = ["sources.qemu.practice-vm", "sources.virtualbox-iso.practice-vm"]
+    sources = ["sources.qemu.practice-vm"]
 
     # Setup for development
     provisioner "shell" {
@@ -91,15 +62,6 @@ build {
             "echo 'ubuntu' | sudo -S systemctl disable systemd-networkd",
             "echo 'ubuntu' | sudo -S systemctl disable NetworkManager-wait-online.service",
 
-            # Patch compiler error
-            "echo 'ubuntu' | sudo -S ln -s /usr/include/x86_64-linux-gnu/asm /usr/include/asm",
-
-            # Setup Virtualbox clipboard
-            "echo 'ubuntu' | sudo -S VBoxClient --clipboard",
-
-            # Pull down the required repository
-            "git clone https://github.com/easy-ebpf/lab ~/Desktop/lab",
-            "rm -rf ~/Desktop/lab/.git ~/Desktop/lab/docs ~/Desktop/lab/.github"
         ]
     }
 
