@@ -4,6 +4,10 @@ packer {
             version = "~> 1"
             source  = "github.com/hashicorp/qemu"
         }
+        virtualbox = {
+            version = "~> 1"
+            source  = "github.com/hashicorp/virtualbox"
+        }
         vagrant = {
             version = "~> 1"
             source = "github.com/hashicorp/vagrant"
@@ -14,7 +18,7 @@ packer {
 source "qemu" "practice-vm" {
     iso_url = "https://releases.ubuntu.com/noble/ubuntu-24.04.3-live-server-amd64.iso"
     iso_checksum            = "file:https://releases.ubuntu.com/noble/SHA256SUMS"
-    disk_size = "8000M"
+    disk_size = "10000M"
     memory = "4096"
     cores = 4
     threads = 4
@@ -42,8 +46,37 @@ source "qemu" "practice-vm" {
     shutdown_timeout = "10h"
 }
 
+source "virtualbox-iso" "practice-vm" {
+    vm_name = "practice-vm"
+    guest_os_type = "Ubuntu_64"
+    hard_drive_discard = true
+    format = "ova"
+    iso_url = "https://releases.ubuntu.com/noble/ubuntu-24.04.3-live-server-amd64.iso"
+    iso_checksum            = "file:https://releases.ubuntu.com/noble/SHA256SUMS"
+    output_directory = "build"
+    headless = true
+    memory = 4096
+    cpus = 4
+    vboxmanage = [
+        ["modifyvm", "{{.Name}}", "--vram", "128"]
+    ]
+    vrdp_bind_address = "0.0.0.0"
+    communicator = "ssh"
+    ssh_pty = true
+    ssh_username = "ubuntu"
+    ssh_password = "ubuntu"
+    ssh_timeout = "10h"
+    shutdown_command  = "echo 'ubuntu' | sudo -S shutdown -P now"
+    shutdown_timeout = "10h"
+    http_directory = "cloud-init"
+    boot_command = [
+        "<wait>e",
+        "<wait><down><down><down><end><left><left><left><left> autoinstall ip=dhcp cloud-config-url=http://{{.HTTPIP}}:{{.HTTPPort}}/autoinstall.yaml<wait><f10><wait>"
+    ]
+}
+
 build {
-    sources = ["sources.qemu.practice-vm"]
+    sources = ["sources.qemu.practice-vm", "sources.virtualbox-iso.practice-vm"]
 
     # Setup for development
     provisioner "shell" {
@@ -77,11 +110,7 @@ build {
     }
 
     post-processor "vagrant" {
-
         keep_input_artifact = true
-        # {{.BuildName}} will be "practice-vm"
-        # {{.Provider}} will be "libvirt" for Qemu and "virtualbox" for VirtualBox
-        provider_override   = "libvirt"
         output = "build/{{.BuildName}}-{{.Provider}}.box"
         compression_level = 9
     }
