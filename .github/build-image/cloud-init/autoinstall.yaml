@@ -24,7 +24,9 @@ autoinstall:
   network:
     version: 2
     ethernets:
-      ens3:        # change to your VM NIC name if different
+      default:
+        match:
+          name: "e*"     # matches enp0s3, ens3, eth0, eno1, etc.
         dhcp4: true
         dhcp6: true
 
