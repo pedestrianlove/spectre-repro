@@ -21,6 +21,13 @@ autoinstall:
     layout:
       name: direct
 
+  network:
+    version: 2
+    ethernets:
+      ens3:        # change to your VM NIC name if different
+        dhcp4: true
+        dhcp6: true
+
   packages:
     # 基本
     - vim 

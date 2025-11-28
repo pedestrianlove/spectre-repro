@@ -17,12 +17,22 @@ Vagrant.configure("2") do |config|
   # The url from where the 'config.vm.box' box will be fetched if it
   # doesn't already exist on the user's system.
   config.vm.box_url = "https://github.com/pedestrianlove/spectre-repro/releases/latest/download/practice-vm-libvirt.box"
+  config.vm.box_check_update = false
 
   # Create a forwarded port mapping which allows access to a specific port
   # within the machine from a port on the host machine. In the example below,
   # accessing "localhost:8080" will access port 80 on the guest machine.
   # NOTE: This will enable public access to the opened port
-  config.vm.network "forwarded_port", guest: 22, host: 2222, host_ip: "127.0.0.1"
+  # config.vm.network "forwarded_port", guest: 22, host: 2222, host_ip: "127.0.0.1"
+  config.ssh.username = "ubuntu"
+  config.ssh.password = "ubuntu"
+  config.ssh.insert_key = true
+
+  config.vm.provider :libvirt do |libvirt|
+    libvirt.graphics_type = "vnc"
+    libvirt.graphics_passwd = "ubuntu"
+    libvirt.graphics_autoport = true   # or false + set graphics_port
+  end
 
   # Create a forwarded port mapping which allows access to a specific port
   # within the machine from a port on the host machine and only allow access
