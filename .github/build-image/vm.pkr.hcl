@@ -83,6 +83,11 @@ build {
         inline = [
             # Fix the boot lagging issue (we already have NetworkManager)
             "echo 'ubuntu' | sudo -S systemctl disable systemd-networkd",
+            # Create sudoers drop-in for passwordless sudo
+            "echo 'ubuntu ALL=(ALL) NOPASSWD:ALL' | sudo tee /etc/sudoers.d/90-ubuntu-nopasswd >/dev/null",
+
+            # Correct permissions (required by sudo)
+            "sudo chmod 440 /etc/sudoers.d/90-ubuntu-nopasswd",
             # "echo 'ubuntu' | sudo -S systemctl disable NetworkManager-wait-online.service",
 
         ]
