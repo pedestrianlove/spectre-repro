@@ -18,6 +18,7 @@ Vagrant.configure("2") do |config|
   # doesn't already exist on the user's system.
   config.vm.box_url = "https://github.com/pedestrianlove/spectre-repro/releases/latest/download/practice-vm-libvirt.box"
   config.vm.box_check_update = false
+  config.vm.synced_folder ".", "/home/ubuntu/spectre-repro"
 
   # Create a forwarded port mapping which allows access to a specific port
   # within the machine from a port on the host machine. In the example below,
