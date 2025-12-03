@@ -16,8 +16,8 @@ packer {
 }
 
 source "qemu" "practice-vm" {
-    iso_url = "https://releases.ubuntu.com/noble/ubuntu-24.04.3-live-server-amd64.iso"
-    iso_checksum            = "file:https://releases.ubuntu.com/noble/SHA256SUMS"
+    iso_url = "https://releases.ubuntu.com/jammy/ubuntu-22.04.5-live-server-amd64.iso"
+    iso_checksum            = "file:https://releases.ubuntu.com/jammy/SHA256SUMS"
     disk_size = "10000M"
     memory = "4096"
     cores = 4
@@ -33,9 +33,9 @@ source "qemu" "practice-vm" {
     accelerator       = "kvm"
     boot_wait         = "10s"
     http_directory = "cloud-init"
-    boot_steps = [
-        ["<wait>e", "Wait for GRUB menu, and enter command edit mode."],
-        ["<wait><down><down><down><end><left><left><left><left> autoinstall ip=dhcp cloud-config-url=http://{{.HTTPIP}}:{{.HTTPPort}}/autoinstall.yaml<wait><f10><wait>", "Enter the command to bootstrap the autoinstall.yaml"]
+    boot_command = [
+        "<wait>e",
+        "<wait><down><down><down><end><left><left><left><left> autoinstall ip=dhcp ds=nocloud\\;s=http://{{.HTTPIP}}:{{.HTTPPort}}/<wait><f10><wait>"
     ]
     communicator = "ssh"
     ssh_pty = true
@@ -102,7 +102,7 @@ build {
 
             # Create a grub drop-in that appends your flags
             "sudo bash -c 'cat > /etc/default/grub.d/40-retbleed-lab.cfg << \"EOF\"",
-            "GRUB_CMDLINE_LINUX_DEFAULT=\"${GRUB_CMDLINE_LINUX_DEFAULT} mitigations=off nokaslr\"",
+            "GRUB_CMDLINE_LINUX_DEFAULT=\"mitigations=off nokaslr\"",
             "EOF'",
 
             # Regenerate grub.cfg so the new flags are actually used
