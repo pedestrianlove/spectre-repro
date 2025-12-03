@@ -93,6 +93,23 @@ build {
         ]
     }
 
+    provisioner "shell" {
+        inline = [
+            "set -eux",
+
+            # Ensure drop-in directory exists
+            "sudo mkdir -p /etc/default/grub.d",
+
+            # Create a grub drop-in that appends your flags
+            "sudo bash -c 'cat > /etc/default/grub.d/40-retbleed-lab.cfg << \"EOF\"",
+            "GRUB_CMDLINE_LINUX_DEFAULT=\"${GRUB_CMDLINE_LINUX_DEFAULT} mitigations=off nokaslr\"",
+            "EOF'",
+
+            # Regenerate grub.cfg so the new flags are actually used
+            "sudo update-grub"
+        ]
+    }
+
     # Clean packages and logs
     provisioner "shell" {
         inline = [
