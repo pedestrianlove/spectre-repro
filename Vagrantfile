@@ -30,6 +30,9 @@ Vagrant.configure("2") do |config|
   config.ssh.insert_key = true
 
   config.vm.provider :libvirt do |libvirt|
+    libvirt.cpus = 2
+    libvirt.cputopology :sockets => '1', :cores => '1', :threads => '2'
+    libvirt.memory = 2048
     libvirt.graphics_type = "vnc"
     libvirt.graphics_passwd = "ubuntu"
     libvirt.graphics_autoport = true   # or false + set graphics_port
