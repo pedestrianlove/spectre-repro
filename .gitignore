@@ -1,2 +1,8 @@
 .vagrant
 .github/build-image/build
+# pixi environments
+.pixi
+slides_output
+__pycache__
+media
+slides

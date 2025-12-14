@@ -1,0 +1,18 @@
+[workspace]
+authors = ["pedestrianlove <jsli@linux.com>"]
+channels = ["conda-forge"]
+name = "spectre-repro"
+platforms = ["linux-64"]
+version = "0.1.0"
+
+[tasks]
+slides = { cmd = "manim-slides render presentation.py && manim-slides convert OptimizationFinal --to HTML -ccontrols=true slides_output/index.html" }
+
+[dependencies]
+manim = ">=0.19.0,<0.20"
+python = "3.12.*"
+meson = ">=1.10.0,<2"
+ninja = ">=1.13.2,<2"
+
+[pypi-dependencies]
+manim-slides = { version = ">=5.5.2, <6", extras = ["pyside6-full"] }
