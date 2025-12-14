@@ -1,89 +1,95 @@
 from manim import *
 
 def intro(self):
-    # # ========== Attack Setup Workflow ==========
-    # section_title = Text("Spectre v1 Attack Setup", font_size=36, color=YELLOW).to_edge(UP)
-    # self.play(Write(section_title))
-    # self.next_slide()
+    # ========== Animated Attack Visualization ==========
+    section_title = Text("Spectre v1 Attack", font_size=36, color=YELLOW).to_edge(UP)
+    self.play(Write(section_title))
+    self.next_slide()
     
-    # LEFT SIDE - Text content
-    left_content = VGroup()
+    # Memory layout as background
+    array1_box = Rectangle(width=2, height=1.2, color=GREEN, fill_opacity=0.2).shift(LEFT * 4.5 + UP * 1.5)
+    array1_label = Text("array1[16]", font_size=16, color=GREEN).next_to(array1_box, UP, buff=0.1)
     
-    # 1. Memory Layout
-    step1_title = Text("1. Memory Layout", font_size=22, color=GREEN)
-    arrays = VGroup(
-        Text("array1[160] (16 valid)", font_size=16),
-        Text("array2[256*512] (probe)", font_size=16),
-        Text("unused1/2[64] (padding)", font_size=16),
-        Text("secret (out-of-bounds)", font_size=16)
-    ).arrange(DOWN, aligned_edge=LEFT, buff=0.15)
+    padding = Rectangle(width=2, height=0.3, color=PURPLE, fill_opacity=0.1).shift(LEFT * 4.5 + UP * 0.1)
     
-    step1_group = VGroup(step1_title, arrays).arrange(DOWN, aligned_edge=LEFT, buff=0.3)
-    left_content.add(step1_group)
+    secret_box = Rectangle(width=2, height=0.5, color=GOLD, fill_opacity=0.3).shift(LEFT * 4.5 + DOWN * 0.6)
+    secret_label = Text("secret", font_size=14, color=GOLD).next_to(secret_box, LEFT, buff=0.2)
     
-    # 2. Cache Preparation
-    step2_title = Text("2. Cache Preparation", font_size=22, color=BLUE)
-    cache_steps = VGroup(
-        Text("Flush array2[i*512]", font_size=16),
-        Text("  for i in 0..255", font_size=16),
-        Text("Flush array1_size", font_size=16),
-        Text("→ Force speculation", font_size=16)
-    ).arrange(DOWN, aligned_edge=LEFT, buff=0.15)
+    array2_box = Rectangle(width=2, height=2.5, color=RED, fill_opacity=0.15).shift(RIGHT * 4.5 + DOWN * 0.2)
+    array2_label = Text("array2[256*512]", font_size=16, color=RED).next_to(array2_box, UP, buff=0.1)
+    array2_note = Text("(probe array)", font_size=12, color=GRAY).next_to(array2_label, DOWN, buff=0.05)
     
-    step2_group = VGroup(step2_title, cache_steps).arrange(DOWN, aligned_edge=LEFT, buff=0.3)
-    left_content.add(step2_group)
+    memory_layout = VGroup(array1_box, array1_label, padding, secret_box, secret_label, 
+                           array2_box, array2_label, array2_note)
+    self.play(Create(memory_layout))
+    self.next_slide()
     
-    # 3. Victim Function & Training
-    step3_title = Text("3. Victim Function & Training", font_size=22, color=ORANGE)
+    # Victim function code
     victim_code = Code(
         code_string="""if (x < array1_size)
   temp &= array2[array1[x] * 512];""",
         language="c",
         background="window",
         add_line_numbers=False
-    ).scale(0.55)
-    training = Text("Train 5:1 (valid:malicious)", font_size=15, color=GRAY)
-    
-    step3_group = VGroup(step3_title, victim_code, training).arrange(DOWN, aligned_edge=LEFT, buff=0.25)
-    left_content.add(step3_group)
-    
-    # Arrange all left content vertically
-    left_content.arrange(DOWN, aligned_edge=LEFT, buff=0.5).to_edge(LEFT, buff=0.8).shift(UP * 0.3)
-    
-    self.play(Write(left_content))
+    ).scale(0.6).shift(UP * 2.2 + LEFT * 0.5)
+    self.play(Create(victim_code))
     self.next_slide()
     
-    # RIGHT SIDE - Visual diagram
-    # Memory layout diagram
-    mem_diagram = VGroup(
-        Rectangle(width=2.5, height=0.6, color=GREEN, fill_opacity=0.3),
-        Text("array1", font_size=14).shift(UP * 1.5),
-        Rectangle(width=2.5, height=0.6, color=RED, fill_opacity=0.3).shift(DOWN * 0.7),
-        Text("array2", font_size=14).shift(DOWN * 0.7),
-        Rectangle(width=2.5, height=0.4, color=PURPLE, fill_opacity=0.2).shift(DOWN * 1.6),
-        Text("padding", font_size=12).shift(DOWN * 1.6),
-        Rectangle(width=2.5, height=0.5, color=GOLD, fill_opacity=0.3).shift(DOWN * 2.4),
-        Text("secret", font_size=14).shift(DOWN * 2.4)
-    ).shift(UP * 1.5)
+    # Flush operation animation
+    flush_text = Text("Flush array2 & array1_size", font_size=16, color=BLUE).shift(DOWN * 2.8)
+    self.play(Write(flush_text))
+    self.play(array2_box.animate.set_fill(opacity=0.05), run_time=0.5)
+    self.next_slide()
     
-    # Training pattern
-    pattern_title = Text("Training Pattern:", font_size=16).shift(DOWN * 0.2)
-    boxes = VGroup()
-    for i in range(12):
-        color = GREEN if i % 6 != 5 else RED
-        box = Rectangle(width=0.35, height=0.35, color=color, fill_opacity=0.6).shift(
-            LEFT * 0.9 + RIGHT * (i % 6) * 0.4 + DOWN * 1.0 + DOWN * (i // 6) * 0.4
-        )
-        boxes.add(box)
+    # Training iterations
+    iteration_label = Text("Training (5 valid : 1 malicious)", font_size=18, color=ORANGE).shift(UP * 0.5)
+    self.play(Write(iteration_label))
     
-    legend = VGroup(
-        Text("■ Valid", font_size=12, color=GREEN),
-        Text("■ Malicious", font_size=12, color=RED)
-    ).arrange(RIGHT, buff=0.3).shift(DOWN * 2.2)
+    # Animate training sequence
+    for round in range(2):
+        for i in range(6):
+            if i < 5:
+                # Valid access - read from array1
+                index = i
+                color = GREEN
+                label_text = f"Valid: x={index}"
+            else:
+                # Malicious access - read secret
+                color = RED
+                label_text = "Malicious: x → secret"
+            
+            access_label = Text(label_text, font_size=14, color=color).shift(DOWN * 0.5)
+            self.play(Write(access_label), run_time=0.3)
+            
+            # Show data flow
+            if i < 5:
+                # Normal path: array1 → array2
+                dot1 = Dot(array1_box.get_right(), color=color)
+                self.play(Create(dot1), run_time=0.2)
+                self.play(dot1.animate.move_to(array2_box.get_left()), run_time=0.4)
+                self.play(FadeOut(dot1), array2_box.animate.set_fill(opacity=0.15), run_time=0.2)
+            else:
+                # Malicious path: secret → array2 (speculative)
+                dot1 = Dot(secret_box.get_right(), color=color)
+                self.play(Create(dot1), run_time=0.2)
+                self.play(dot1.animate.move_to(array2_box.get_left()), run_time=0.4)
+                # Highlight cached location
+                cache_highlight = Rectangle(width=0.3, height=0.3, color=YELLOW, 
+                                           fill_opacity=0.5).move_to(array2_box.get_top() + DOWN * 0.5)
+                self.play(Create(cache_highlight), FadeOut(dot1), run_time=0.2)
+                self.play(FadeOut(cache_highlight), run_time=0.3)
+            
+            self.play(FadeOut(access_label), run_time=0.2)
     
-    right_content = VGroup(mem_diagram, pattern_title, boxes, legend).to_edge(RIGHT, buff=0.8)
+    self.play(FadeOut(iteration_label))
     
-    self.play(Create(right_content))
+    # Show result
+    result_text = Text("Secret byte cached in array2!", font_size=18, color=YELLOW).shift(DOWN * 0.5)
+    self.play(Write(result_text))
+    self.play(array2_box.animate.set_fill(color=YELLOW, opacity=0.3), run_time=0.5)
+    self.next_slide()
+    
+    self.play(FadeOut(flush_text), FadeOut(result_text))
     self.next_slide()
     
     # Clear for next section
